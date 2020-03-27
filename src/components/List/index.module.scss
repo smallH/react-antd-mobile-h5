@@ -1,0 +1,7 @@
+.container {
+  & :global {
+    .am-whitespace {
+      background-color: #fff;
+    }
+  }
+}
