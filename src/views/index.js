@@ -1,63 +1,102 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import styles from './index.module.scss';
-import { List, WhiteSpace, Button } from 'antd-mobile';
+import { Calendar, List } from 'antd-mobile';
+import zhCN from 'antd-mobile/lib/calendar/locale/zh_CN';
 
 const Item = List.Item;
-const Brief = Item.Brief;
+
+// 默认数据
+const now = new Date();
+const extra = { '2020/04/01': { info: '固定日期不可选', disable: true } }; // 设置不可选方式一
+extra[+new Date(now.getFullYear(), now.getMonth(), now.getDate())] = { info: '今日不可选', disable: true }; // 设置不可选方式二，组件要的格式
+
+// 将 YYYY/MM/DD 这种格式转换为组件所需的时间撮格式{'时间撮':{info:'', disable:''}}
+Object.keys(extra).forEach((key) => {
+    const info = extra[key];
+    const date = new Date(key);
+    if (!Number.isNaN(+date) && !extra[+date]) {
+        extra[+date] = info;
+    }
+});
 
 class Main extends React.PureComponent {
 
     constructor(props) {
         super(props);
         this.state = {
-            disabled: false
+            show: false,
+            config: {},
+            startTime: undefined,
+            endTime: undefined,
         };
+    }
+
+    _renderBtn(zh, config = {}) {
+        return (
+            <Item
+                arrow="horizontal"
+                onClick={() => {
+                    document.getElementsByTagName('body')[0].style.overflowY = 'hidden';
+                    this.setState({
+                        show: true,
+                        config,
+                    });
+                }}
+            >
+                {zh}
+            </Item>
+        );
+    }
+
+    // 确定
+    _onConfirm = (startTime, endTime) => {
+        document.getElementsByTagName('body')[0].style.overflowY = this.originbodyScrollY;
+        this.setState({
+            show: false,
+            startTime,
+            endTime,
+        });
+    }
+
+    // 重置
+    _onCancel = () => {
+        document.getElementsByTagName('body')[0].style.overflowY = this.originbodyScrollY;
+        this.setState({
+            show: false,
+            startTime: undefined,
+            endTime: undefined,
+        });
+    }
+
+    // 扩展日期单元格显示内容，可用于设置不可选的日期
+    _getDateExtra = date => {
+        return extra[+date];
+    };
+
+    // 当选择的区间包含不可选日期时触发的回调函数
+    _onSelectHasDisableDate = (dates) => {
+        console.warn('选择区间包含不可选日期时的回调函数', dates);
     }
 
     render() {
         return (
             <div className={styles.container}>
-                <List renderHeader={() => '头部'} renderFooter={() => '尾部'}>
-                    <Item extra={'左右布局简介'}>标题</Item>
-                    <Item arrow="horizontal" multipleLine onClick={() => { }}>
-                        标题
-                        <Brief>上下布局简介</Brief>
-                    </Item>
-                    <Item
-                        arrow="horizontal"
-                        extra={'默认对齐middle'}
-                        align="middle"
-                        multipleLine
-                        onClick={() => { }}
-                    >
-                        标题
-                        <Brief>上下布局简介</Brief>
-                    </Item>
-                    <Item
-                        arrow="horizontal"
-                        thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
-                        multipleLine
-                        onClick={() => { }}
-                    >
-                        标题 <Brief>带图标的选项</Brief>
-                    </Item>
-                    <Item>文字不换行超出显示省略号。文字不换行超出显示省略号。</Item>
-                    <Item wrap>文字支持自动换行。文字支持自动换行。文字支持自动换行。</Item>
-                    <Item extra={'左右布局简介'} multipleLine align="middle" wrap>
-                        文字支持自动换行。文字支持自动换行。文字支持自动换行。
-                    </Item>
-                    <Item
-                        disabled={this.state.disabled}
-                        onClick={() => { this.setState({ disabled: true }); }}
-                    >
-                        点击后，状态变为禁用
-                    </Item>
-                    <Item>
-                        内嵌其它标签元素
-                        <Brief><Button>123</Button></Brief>
-                    </Item>
+                <List style={{ backgroundColor: 'white' }}>
+                    {this._renderBtn('选择日期区间')}
                 </List>
-                <WhiteSpace size='lg' />
+                <Calendar
+                    {...this.state.config}
+                    locale={zhCN} // 本地化
+                    enterDirection='horizontal' // 入场方向：水平'horizontal' | 垂直'vertical'
+                    visible={this.state.show} // 是否显示
+                    onCancel={this._onCancel} // 关闭时回调
+                    onConfirm={this._onConfirm} // 确认时回调
+                    pickTime={true}
+                    onSelectHasDisableDate={this._onSelectHasDisableDate} // 选择区间包含不可用日期
+                    getDateExtra={this._getDateExtra} // 日期扩展数据
+                    defaultDate={now} // 显示开始日期
+                />
             </div>
         );
     }

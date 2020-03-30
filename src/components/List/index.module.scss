@@ -4,4 +4,12 @@
       background-color: #fff;
     }
   }
+
+  .voice {
+    display: flex;
+    align-items: center;
+    .range {
+      flex: 1;
+    }
+  }
 }
