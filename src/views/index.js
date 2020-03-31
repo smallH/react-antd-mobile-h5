@@ -1,105 +1,35 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import styles from './index.module.scss';
-import { Calendar, List } from 'antd-mobile';
-import zhCN from 'antd-mobile/lib/calendar/locale/zh_CN';
-
-const Item = List.Item;
-
-// 默认数据
-const now = new Date();
-const extra = { '2020/04/01': { info: '固定日期不可选', disable: true } }; // 设置不可选方式一
-extra[+new Date(now.getFullYear(), now.getMonth(), now.getDate())] = { info: '今日不可选', disable: true }; // 设置不可选方式二，组件要的格式
-
-// 将 YYYY/MM/DD 这种格式转换为组件所需的时间撮格式{'时间撮':{info:'', disable:''}}
-Object.keys(extra).forEach((key) => {
-    const info = extra[key];
-    const date = new Date(key);
-    if (!Number.isNaN(+date) && !extra[+date]) {
-        extra[+date] = info;
-    }
-});
+import { List, Picker } from 'antd-mobile';
+import { createForm } from 'rc-form';
+import PropTypes from 'prop-types';
 
 class Main extends React.PureComponent {
 
     constructor(props) {
         super(props);
         this.state = {
-            show: false,
-            config: {},
-            startTime: undefined,
-            endTime: undefined,
+
         };
     }
 
-    _renderBtn(zh, config = {}) {
-        return (
-            <Item
-                arrow="horizontal"
-                onClick={() => {
-                    document.getElementsByTagName('body')[0].style.overflowY = 'hidden';
-                    this.setState({
-                        show: true,
-                        config,
-                    });
-                }}
-            >
-                {zh}
-            </Item>
-        );
-    }
 
-    // 确定
-    _onConfirm = (startTime, endTime) => {
-        document.getElementsByTagName('body')[0].style.overflowY = this.originbodyScrollY;
-        this.setState({
-            show: false,
-            startTime,
-            endTime,
-        });
-    }
-
-    // 重置
-    _onCancel = () => {
-        document.getElementsByTagName('body')[0].style.overflowY = this.originbodyScrollY;
-        this.setState({
-            show: false,
-            startTime: undefined,
-            endTime: undefined,
-        });
-    }
-
-    // 扩展日期单元格显示内容，可用于设置不可选的日期
-    _getDateExtra = date => {
-        return extra[+date];
-    };
-
-    // 当选择的区间包含不可选日期时触发的回调函数
-    _onSelectHasDisableDate = (dates) => {
-        console.warn('选择区间包含不可选日期时的回调函数', dates);
-    }
 
     render() {
+        const { getFieldProps } = this.props.form;
         return (
             <div className={styles.container}>
-                <List style={{ backgroundColor: 'white' }}>
-                    {this._renderBtn('选择日期区间')}
+                <List>
+
                 </List>
-                <Calendar
-                    {...this.state.config}
-                    locale={zhCN} // 本地化
-                    enterDirection='horizontal' // 入场方向：水平'horizontal' | 垂直'vertical'
-                    visible={this.state.show} // 是否显示
-                    onCancel={this._onCancel} // 关闭时回调
-                    onConfirm={this._onConfirm} // 确认时回调
-                    pickTime={true}
-                    onSelectHasDisableDate={this._onSelectHasDisableDate} // 选择区间包含不可用日期
-                    getDateExtra={this._getDateExtra} // 日期扩展数据
-                    defaultDate={now} // 显示开始日期
-                />
             </div>
         );
     }
 }
 
-export default Main;
+Main.propTypes = {
+    form: PropTypes.object.isRequired
+};
+
+const PickerWrapper = createForm()(Main);
+export default PickerWrapper;
