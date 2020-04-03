@@ -8,7 +8,7 @@ input::-ms-clear {
 
 html {
 	color: #000;
-	background: #FFF;
+	background: #fff;
 }
 
 body,
@@ -73,10 +73,14 @@ th {
 
 q:before,
 q:after {
-	content: '';
+	content: "";
 }
 
 abbr,
 acronym {
 	border: 0;
 }
+
+/* body {
+	background-color: #fff !important;
+} */
